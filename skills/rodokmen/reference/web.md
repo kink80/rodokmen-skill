@@ -1,21 +1,21 @@
-# Rodinný web – stavba, nastavení, zveřejnění
+# Family website – build, settings, publishing
 
-Web je statický (Astro + vyhledávání Pagefind), data bere z `data/` přes `tools/export_web.py`.
-Stránky: úvod (lákadlo, statistiky, zajímavosti, mapa, rody, vějíř), příběh, zajímavosti, rody, stránka rodu,
-mapa (OpenStreetMap), vějíř přes celou obrazovku s hledáním, seznam předků, zápisy (s výřezem, rámečkem, přepisem
-a překladem), stránka osoby, rodiny, „Co hledáme“, výzkumný deník, hledání.
+Static site (Astro + Pagefind search); data comes from `data/` via `tools/export_web.py`.
+Pages: home (teaser, statistics, fun facts, map, lines, fan chart), story, fun facts, lines, line page, map
+(OpenStreetMap), full-screen fan chart with search, list of ancestors, records (crop, highlight box, transcription
+and translation), person page, families, „Co hledáme“, research log, search.
 
-## Příkazy (ve složce `web/`)
-| příkaz | co dělá |
+## Commands (in `web/`)
+| command | does |
 |---|---|
-| `npm install` | jednou na začátku (stáhne knihovny, ~1 minuta) |
-| `npm run data` | převede data do webu (vždy po změně dat; funkční Python 3 vyhledá `scripts/data.mjs`) |
-| `npm run build` | sestaví web do `dist/` |
-| `npm run nahled` | data + build + náhled na http://localhost:4321 (Ctrl+C ukončí) |
-| `npm run dev` | vývojový režim při úpravách vzhledu |
-| `npm run nasadit` | data + build + nahrání na Netlify |
+| `npm install` | once at the start (downloads libraries, ~1 minute) |
+| `npm run data` | converts data for the web (always after data changes; `scripts/data.mjs` finds a working Python 3) |
+| `npm run build` | builds the site into `dist/` |
+| `npm run nahled` | data + build + preview at http://localhost:4321 (Ctrl+C stops) |
+| `npm run dev` | dev mode while editing the look |
+| `npm run nasadit` | data + build + upload to Netlify |
 
-Náhled spouštěj na pozadí a uživateli pošli odkaz. Vzhled si ověř sám (snímek obrazovky přes prohlížeč, je-li k dispozici).
+Run the preview in the background and send the user the link. Check the look yourself (browser screenshot, if available).
 
 ## `data/web.json`
 ```json
@@ -30,61 +30,64 @@ Náhled spouštěj na pozadí a uživateli pošli odkaz. Vzhled si ověř sám (
  "zajimavosti_na_uvodu": [{"nadpis": "Nejstarší předek", "text": "Kovář Jan, asi 1825."}]
 }
 ```
-- `kontakt.jmeno` je ve 3. pádě („Napište Petrovi na …“).
-- **Přihlášení:** otázka, na kterou zná odpověď jen rodina (ne snadno dohledatelná na sociálních sítích).
-  Odpověď se porovnává bez diakritiky a velkých písmen. Na serveru i v cookie prohlížeče je jen její otisk (SHA-256),
-  samotná odpověď se nikam neukládá. Krátkou nebo běžnou odpověď (jméno, obec) ale jde z otisku uhádnout zkoušením,
-  proto ať ji uživatel nepoužívá jako heslo jinde. Bez odpovědi nasazení (`npm run nasadit`, `deploy-caprover`)
-  skončí chybou; otevřený web jen výslovně přes `"otevreny": true` v `prihlaseni`.
-  Je to lehká ochrana proti náhodným návštěvníkům, ne bankovní zabezpečení – citlivé věci na web nepatří.
-- `uvod.foto` = klíč obrázku ve `vyrezy/` (ulož přes `vyrez.py`).
-- `pribeh`: `menu` a `tlacitko` pojmenuj podle hlavního rodu („Příběh Novákových“), `rod` = číslo rodu (8–15).
-  Bez vyplněného `uvod` ukáže úvodní stránka aspoň název a `lead` příběhu. Viz `pribehy.md`.
-- Šablona `web.json` je prázdná – název nastav hned, jak znáš příjmení výchozí osoby (`kontrola.py` hlásí zbytky ukázky).
-- `citlive_schvaleno`: seznam úryvků textu, které uživatel na webu schválil (např. `["oběsil se ve stodole"]`) –
-  `kontrola.py` je pak nehlásí jako `CITLIVÉ`. Úryvek musí obsahovat hlášené slovo; když se text změní, hlásí se znovu.
+- The template `web.json` is empty – set `nazev` as soon as you know the starting person's surname (`kontrola.py` reports sample leftovers).
+- `kontakt.jmeno` is in the Czech **dative** („Napište Petrovi na …“).
+- **`prihlaseni` (login):** a question only the family can answer (not easily found on social media).
+  - Answer compared ignoring diacritics and case. Server and browser cookie store only its SHA-256 hash, never the answer itself.
+    A short or common answer (a name, a village) can still be guessed from the hash by trial – tell the user not to reuse it as a password anywhere.
+  - Without an answer, deployment (`npm run nasadit`, `deploy-caprover`) fails; an open site only explicitly via `"otevreny": true` in `prihlaseni`.
+  - Light protection against casual visitors, not bank-grade security – sensitive things don't belong on the web.
+- `uvod.foto` = image key in `vyrezy/` (save via `vyrez.py`). Without `uvod`, the home page shows at least the story title and `lead`.
+- `pribeh`: name `menu` and `tlacitko` after the main line („Příběh Novákových“); `rod` = line number (8–15). See `stories.md`.
+- `zajimavosti_na_uvodu`: best 2–4 fun facts for the home page (`stories.md`).
+- `citlive_schvaleno`: list of text snippets the user approved for the web (e.g. `["oběsil se ve stodole"]`) – `kontrola.py`
+  then no longer reports them as `CITLIVÉ`. The snippet must contain the reported word; if the text changes, it is reported again.
+  Approval process: `privacy.md`.
 
-## Zveřejnění na Netlify (výchozí, zdarma)
-1. Uživatel si založí účet na netlify.com (stačí přihlášení přes Google/GitHub) – udělá sám.
-2. Přihlášení CLI (otevře prohlížeč) – dej uživateli: `! cd web && npx -y netlify-cli@latest login`.
-   Když `!` nejde (cloudové prostředí): `npx -y netlify-cli@latest login --request "Rodokmen"` vypíše odkaz a číslo
-   lístku – uživatel odkaz otevře a schválí, pak `npx -y netlify-cli@latest login --check <lístek>`.
-3. Založení webu a propojení složky (interaktivní, jednou) – dej uživateli:
-   `! cd web && npx -y netlify-cli@latest sites:create` (zvolí tým a název → adresa `https://<název>.netlify.app`),
-   případně `npx netlify-cli link`, pokud web už existuje. Je-li uživatel už přihlášený, jde web založit i bez dotazů
-   (můžeš spustit sám): `cd web && npx -y netlify-cli@latest sites:create --name <název> --account-slug <tým>`.
-   **Windows:** když `!` běží ve Windows PowerShellu 5.1 (`&&` tam nefunguje a `npx` blokuje Execution Policy), ať uživatel
-   otevře PowerShell 7 nebo Příkazový řádek, přejde do složky `web` a spustí `npx -y netlify-cli@latest login` (a `sites:create`).
-4. Nasazení: `cd web && npm run nasadit` (můžeš spustit sám; vypíše adresu webu).
-5. Ověř: otevři adresu **v anonymním okně** → musí se ukázat rodinná přihlašovací otázka; po správné odpovědi web.
-   Ukáže-li se místo ní přihlášení k Netlify (401, „Login Redirect“), zdědil web ochranu týmu („Team protection“).
-   Uživatel ji vypne v administraci webu: Project configuration → Access & security → Visitor access. Web pak chrání
-   rodinná otázka – proto znovu ověř v anonymním okně, že se ukáže.
-   Přihlášení zajišťuje Netlify Edge Function `web/netlify/edge-functions/brana.js` (generuje ji export).
-Další aktualizace = jen `npm run nasadit`. Vlastní doménu lze nastavit v administraci Netlify.
+## Publishing on Netlify (default, free)
+Before the first deploy go through the checklist in `privacy.md`.
+1. User creates an account at netlify.com (Google/GitHub login is enough) – they do it themselves.
+2. CLI login (opens browser) – give the user: `! cd web && npx -y netlify-cli@latest login`.
+   If `!` doesn't work (cloud environment): `npx -y netlify-cli@latest login --request "Rodokmen"` prints a link and a ticket
+   number – user opens the link and approves, then `npx -y netlify-cli@latest login --check <ticket>`.
+3. Create the site and link the folder (interactive, once) – give the user:
+   `! cd web && npx -y netlify-cli@latest sites:create` (picks team and name → `https://<name>.netlify.app`),
+   or `npx netlify-cli link` if the site already exists. If the user is already logged in you can create it non-interactively
+   yourself: `cd web && npx -y netlify-cli@latest sites:create --name <name> --account-slug <team>`.
+   **Windows:** if `!` runs in Windows PowerShell 5.1 (`&&` doesn't work and Execution Policy blocks `npx`), have the user open
+   PowerShell 7 or Command Prompt, go to the `web` folder and run `npx -y netlify-cli@latest login` (and `sites:create`).
+4. Deploy: `cd web && npm run nasadit` (you may run it; prints the site URL).
+5. Verify: open the URL **in a private/incognito window** → the family login question must appear; after the correct answer, the site.
+   If a Netlify login appears instead (401, „Login Redirect“), the site inherited the team's „Team protection“.
+   User turns it off in site admin: Project configuration → Access & security → Visitor access. The family question then
+   protects the site – re-check in a private window that it appears.
+   Login is handled by the Netlify Edge Function `web/netlify/edge-functions/brana.js` (generated by the export).
 
-**Pozor:** „Netlify Drop“ (přetažení složky v prohlížeči) neumí Edge Functions → web by byl bez přihlášení. Nepoužívat.
+Later updates = just `npm run nasadit`. Custom domain can be set in Netlify admin.
 
-## Náhled v Claude desktop
-Projekt má `.claude/launch.json` – náhled webu v Claude desktop spustí `npm --prefix web run dev` (port 4321). Data se
-předtím musí vyexportovat (`cd web && npm run data`). Když náhled nenaběhne (třeba na Windows, kde je `npm` jako `npm.cmd`),
-zkus v `launch.json` `"runtimeExecutable": "node"` a `"runtimeArgs": ["web/node_modules/astro/bin/astro.mjs", "dev", "--root", "web"]`
-(Astro 7 má spouštěč `astro.mjs`, ne `astro.js`). Server běží jen na tomto počítači – nepřidávej `--host`.
+**Never use „Netlify Drop“** (drag-and-drop folder in the browser): it doesn't support Edge Functions → site without login.
 
-## Vlastní server (pokročilé)
-- Docker: `web/Dockerfile` (build Astro → nginx s `nginx.conf` z `nginx.sablona.conf`). Před buildem image vždy `npm run data`.
-- CapRover: `npm run deploy-caprover` (vyžaduje nainstalovaný a přihlášený `caprover` CLI).
+## Preview in Claude desktop
+The project has `.claude/launch.json` – Claude desktop preview runs `npm --prefix web run dev` (port 4321). Export data first
+(`cd web && npm run data`). If the preview doesn't start (e.g. Windows, where `npm` is `npm.cmd`), set in `launch.json`
+`"runtimeExecutable": "node"` and `"runtimeArgs": ["web/node_modules/astro/bin/astro.mjs", "dev", "--root", "web"]`
+(Astro 7's launcher is `astro.mjs`, not `astro.js`). The server runs only on this computer – don't add `--host`.
 
-## Úpravy vzhledu
-Styly `web/src/styles/global.css` (barvy v `:root`), rozložení `web/src/layouts/Base.astro`, stránky `web/src/pages/`.
-Barvy rodů jsou v `tools/export_web.py` (`LINE_COLORS`) a `tools/fan_chart.py` (`BASE`). Upravuj jen na přání uživatele
-a po úpravě zkontroluj web na mobilu i počítači.
+## Own server (advanced)
+- Docker: `web/Dockerfile` (Astro build → nginx with `nginx.conf` from `nginx.sablona.conf`). Always `npm run data` before building the image.
+- CapRover: `npm run deploy-caprover` (needs the `caprover` CLI installed and logged in).
 
-## Vějíř jako plakát
-`python3 -I tools/fan_chart.py vystupy/` → SVG a HTML (a PNG, je-li nainstalovaný Google Chrome, na Windows i Microsoft Edge) k tisku.
+## Customising the look
+Styles `web/src/styles/global.css` (colours in `:root`), layout `web/src/layouts/Base.astro`, pages `web/src/pages/`.
+Line colours: `tools/export_web.py` (`LINE_COLORS`) and `tools/fan_chart.py` (`BASE`). Change only at the user's request;
+afterwards check the site on mobile and desktop.
 
-## Aktualizace staršího projektu
-Znovu spusť `python3 -I SKILL_DIR/tools/novy_projekt.py <složka projektu>`. Data (`data/`, výřezy) zůstanou, `tools/` se přepíše
-a soubory ve `web/`, které se liší od nové šablony, taky – staré verze uloží do `pracovni/zaloha_web_<datum>/` a vypíše jejich seznam.
-Upravoval-li jsi s uživatelem vzhled (styly, stránky), převezmi úpravy ze zálohy (porovnej soubory) a ověř web. Pak ve `web/`
-`npm install` a `npm run data`. Starou šablonu přihlášení `export_web.py` odmítne s výzvou k aktualizaci.
+## Fan chart as a poster
+`python3 -I tools/fan_chart.py vystupy/` → SVG and HTML for printing (plus PNG if Google Chrome is installed; on Windows also Microsoft Edge).
+
+## Updating an older project
+1. Re-run `python3 -I SKILL_DIR/tools/novy_projekt.py <project folder>`. Data (`data/`, crops) stay; `tools/` is overwritten,
+   and so are files in `web/` that differ from the new template – old versions are backed up to
+   `pracovni/zaloha_web_<datum>/` and listed.
+2. If you customised the look with the user (styles, pages), port the changes from the backup (diff the files) and check the site.
+3. In `web/`: `npm install` and `npm run data`. `export_web.py` rejects an old login template with a prompt to update.

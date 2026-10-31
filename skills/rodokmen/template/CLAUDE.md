@@ -1,7 +1,7 @@
-# Projekt rodokmenu
+# Family tree project
 
-Tohle je projekt rodokmenu vedený skillem **rodokmen**. Na začátku každé konverzace:
-1. Načti skill `rodokmen` (pokud ještě není načtený).
-2. Přečti `data/STAV.md` – stav, pravidla a co je rozpracované – a konec `data/research_log.md`.
-3. Pokračuj tam, kde se skončilo. Komunikuj česky, stručně a srozumitelně pro člověka bez zkušeností s genealogií a programováním.
-4. Co by šlo ve skillu zlepšit (chyby nástrojů, nové archivy, nápady), zapisuj do `poznamky_pro_skill.md` – viz skill, sekce „Poznámky pro správce skillu“.
+This is a family-tree project run by the **rodokmen** skill. At the start of every conversation:
+1. Load the `rodokmen` skill (if not loaded yet).
+2. Read `data/STAV.md` (status, rules, work in progress) and the end of `data/research_log.md`.
+3. Continue where you left off. Talk to the user in Czech, briefly and plainly – they have no genealogy or programming experience.
+4. Write skill improvement ideas (tool bugs, new archives, wishes) to `poznamky_pro_skill.md` – see the skill, "Feedback for the skill maintainer".
